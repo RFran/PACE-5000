@@ -12,29 +12,34 @@ def execution(ser, commande):
     # Code to send a command to the controller
     # send the character to the device
     ser.write(bytes(commande + '\r\n', 'UTF-8'))
-    print(ser.inWaiting())
+    time.sleep(0.1)
+    print(ser.outWaiting())
+    print('? =',ser.inWaiting())
     out = ''
 
     liste = []
     reponse = []
-    #while ser.inWaiting() > 0:
-    out = str(ser.read(1))
-    liste.append(out)
-    print('liste = ', liste)
+    while (ser.inWaiting() > 0):
+        out = str(ser.read(ser.inWaiting()))
+        print('Out = ', out)
+        liste.append(out)
+
     if (len(liste) > 0):
 
-        #del liste[len(liste) - 1]
-        for car in liste:
-            reponse.append(car[1])  # Answer is in a list of caracters --> a simple word (rep)
-    rep = str()
-    for i in range(len(reponse)):
-        rep += reponse[i]
-    print(' rep = ', rep)
+        rep = out.split(" ")[1]
+        rep = rep[0:-5]
+
+        print(' reponse = ', rep)
+        return rep
+    else:
+        return()
+
+
 
     ser.flushInput()
     ser.flushOutput()
 
-    return rep
+
 
 def discover_connect():
 
@@ -48,15 +53,28 @@ def discover_connect():
                             stopbits=serial.STOPBITS_ONE,
                             bytesize=serial.EIGHTBITS,
                             xonxoff=True)
-        execution(ser, ':SOURT 10')
-        longueur = len(execution(ser, ':SYST:ERR?'))
-        print('Exec : longueur = ', longueur)
-        if longueur > 0 and str(ser.isOpen()) == 'True':
-            break
 
-    return (ser)
+
+        #execution(ser, ':OUTP 1')    # Commande interdite !!!!!!!
+
+
+        Longueur = len(execution(ser, ':SOUR:PRES?'))
+        print('Exec : longueur = ', Longueur)
+        if Longueur > 0 and str(ser.isOpen()) == 'True':
+            return(ser)
+        else:
+            print('Connection error. Make sure RS232 cable is connected.')
+            return()
+
+
 
 
 ser = discover_connect()
+print("Connécté au port :", ser)
+
+execution(ser, ':SOUR:PRES 10')
+execution(ser, ':SOUR:PRES?')
+
+
 ser.close()
 
