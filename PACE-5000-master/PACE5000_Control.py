@@ -28,19 +28,21 @@ def execution(ser, commande):
     print('? =', ser.inWaiting())                       # Look into the input buffer, if it's not empty it's mean that the device received our command
     out = ''
     liste = []
-
-    if ser.inWaiting()!=0:
-        while (ser.inWaiting() > 0):                        # Receive and read the device's answer
-            out = str(ser.read(ser.inWaiting()))
-            print('Out = ', out)
-            liste.append(out)
-        if (len(liste) > 0):                               # If we get an answer, we take only the usefull information before retruning it
-            rep = out.split(" ")[1]
-            rep = rep[0:-5]
-            print('reponse=', rep, "|")
-            print(type(rep))
-            if type(rep)==str:
-                return rep
+    for i in range(2):
+        if ser.inWaiting()!=0:
+            while (ser.inWaiting() > 0):                        # Receive and read the device's answer
+                out = str(ser.read(ser.inWaiting()))
+                print('Out = ', out)
+                liste.append(out)
+            if (len(liste) > 0):                               # If we get an answer, we take only the usefull information before retruning it
+                rep = out.split(" ")[1]
+                rep = rep[0:-5]
+                print('reponse=', rep, "|")
+                print(type(rep))
+                if type(rep)==str:
+                    return rep
+        else:
+            time.sleep(0.1)
     else:
         return '0'
 
