@@ -21,31 +21,34 @@ import G_window                    # Import the script of our graphical interfac
 def execution(ser, commande):
     # Code to send a command to the controller
     # send the character to the device
-    ser.write(bytes(commande + '\r\n', 'UTF-8'))
-    print("command sent: ", (commande + '\r\n'))
-    time.sleep(0.15)                                     # waiting for a response
-    print(ser.outWaiting())
-    print('? =', ser.inWaiting())                       # Look into the input buffer, if it's not empty it's mean that the device received our command
-    out = ''
-    liste = []
-
-    if ser.inWaiting()!=0:
-        while (ser.inWaiting() > 0):                        # Receive and read the device's answer
-            out = str(ser.read(ser.inWaiting()))
-            print('Out = ', out)
-            liste.append(out)
-        if (len(liste) > 0):                               # If we get an answer, we take only the usefull information before retruning it
-            rep = out.split(" ")[1]
-            rep = rep[0:-5]
-            print('reponse=', rep, "|")
-            print(type(rep))
-            if type(rep)==str:
-                return rep
-    else:
-        return '0'
-
-
-
+    try:
+        ser.write(bytes(commande + '\r\n', 'UTF-8'))
+        print("command sent: ", (commande + '\r\n'))
+        time.sleep(0.15)                                     # waiting for a response
+        print(ser.outWaiting())
+        print('? =', ser.inWaiting())                       # Look into the input buffer, if it's not empty it's mean that the device received our command
+        out = ''
+        liste = []
+        for i in range(2):
+            if ser.inWaiting()!=0:
+                while (ser.inWaiting() > 0):                        # Receive and read the device's answer
+                    out = str(ser.read(ser.inWaiting()))
+                    print('Out = ', out)
+                    liste.append(out)
+                if (len(liste) > 0):                               # If we get an answer, we take only the usefull information before retruning it
+                    rep = out.split(" ")[1]
+                    rep = rep[0:-5]
+                    print('reponse=', rep, "|")
+                    print(type(rep))
+                    if type(rep)==str:
+                        return rep
+            else:
+                time.sleep(0.1)
+        else:
+            return '0'
+    except AttributeError :
+        info_pace = QtGui.QMessageBox.question(None, 'PACE 5000 Information', "Can't find any device, make sure RS232 cable is connected.")
+        return ''
 
 #------- CLASSES -------#
 
@@ -53,6 +56,7 @@ class MainWindow(QtGui.QMainWindow, G_window.Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
+
 
         self.btn_read.clicked.connect(self.readparam)        # We define the purpose of the buttons
         #self.btn_apply.clicked.connect(self.readparam)
@@ -147,12 +151,7 @@ class MainWindow(QtGui.QMainWindow, G_window.Ui_MainWindow):
                 #    self.line_state.setStyleSheet("QLabel {color : green}")
                 #    print("List data = ", time_p)
                 #    self.plot_p.plot(y=pressure_data, x=time_p, pen=(19,234,201), symbolBrush=(19,234,201), symbol='h')
-                #    break
-#
-
-
-
-
+                #    break#
 
 
 
@@ -163,6 +162,7 @@ def Main():
     form = MainWindow()
     form.show()
     app.exec_()
+
 
 
 
@@ -185,8 +185,9 @@ def discover_connect():                    # Allow us to find the COM port
         if Longueur > 0 and str(ser.isOpen()) == 'True':   # If we get an answer it's the right device
             return(ser)                                    # ser is now the right COM port
         else:
+
             print('Connection error. Make sure RS232 cable is connected.')
-            return()
+
 
 
 
